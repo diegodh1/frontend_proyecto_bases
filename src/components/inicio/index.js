@@ -19,6 +19,13 @@ import presentacion from '../../images/presentacion.mp4';
 import { KeyboardTab } from '@material-ui/icons';
 import Snackbar from '@material-ui/core/Snackbar';
 import Alert from '@material-ui/lab/Alert';
+import Dialog from '@material-ui/core/Dialog';
+import DialogActions from '@material-ui/core/DialogActions';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogContentText from '@material-ui/core/DialogContentText';
+import DialogTitle from '@material-ui/core/DialogTitle';
+import Slide from '@material-ui/core/Slide';
+import Formulario_empleado from '../formulario_empleado';
 
 function Copyright() {
   return (
@@ -29,6 +36,9 @@ function Copyright() {
     </Typography>
   );
 }
+const Transition = React.forwardRef(function Transition(props, ref) {
+  return <Slide direction="up" ref={ref} {...props} />;
+});
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -65,10 +75,20 @@ const Inicio = () => {
   const [pass_invalid, set_pass_invalid] = useState(false);
   const [helper_cedula, set_helper_cc] = useState('');
   const [helper_contrasenha, set_helper_pass] = useState('');
+  const [open, setOpen] = React.useState(false);
   const [error_contrasenha, set_error_contrasenha] = useState(false);
   const vertical = 'center';
   const horizontal = 'right';
   const classes = useStyles();
+
+  const handleClickOpen = () => {
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+  };
+
   const ingresar = () => {
     if (!Number(cedula) || contrasenha.length <= 6) {
       !Number(cedula) ? set_error_cedula(true) : set_error_cedula(false);
@@ -165,14 +185,38 @@ const Inicio = () => {
                 </Link>
               </Grid>
               <Grid item>
-                <Link href="#" variant="body2" style={{ color: '#707070' }}>
-                  {"Don't have an account? Sign Up"}
+                <Link href="#" onClick={e => handleClickOpen()} variant="body2" style={{ color: '#707070' }}>
+                  {"dale click aquíe para registrarte"}
                 </Link>
               </Grid>
             </Grid>
             <Box mt={5}>
               <Copyright />
             </Box>
+            <Dialog
+              open={open}
+              TransitionComponent={Transition}
+              keepMounted
+              maxWidth={'xl'}
+              onClose={handleClose}
+              aria-labelledby="alert-dialog-slide-title"
+              aria-describedby="alert-dialog-slide-description"
+            >
+              <DialogTitle id="alert-dialog-slide-title">{"Formulario de registro"}</DialogTitle>
+              <DialogContent>
+                <DialogContentText id="alert-dialog-slide-description">
+                  <Formulario_empleado />
+                </DialogContentText>
+              </DialogContent>
+              <DialogActions>
+                <Button onClick={handleClose} color="primary">
+                  Disagree
+          </Button>
+                <Button onClick={handleClose} color="primary">
+                  Agree
+          </Button>
+              </DialogActions>
+            </Dialog>
           </form>
         </div>
       </Grid>

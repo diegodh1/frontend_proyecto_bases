@@ -25,7 +25,8 @@ const useStyles = makeStyles((theme) => ({
         fontSize: 14,
     },
     pos: {
-        marginBottom: 12,
+        marginBottom: '1%',
+        fontSize:'13px'
     },
 }));
 
@@ -73,7 +74,8 @@ export default function Search_location() {
                                             <p>Latitude: {coordenadas.lat}</p>
                                             <p>Longitude: {coordenadas.lng}</p>
                                             <p>Dirección: {direccion}</p>
-                                            <p>Una vez haya terminado de ingresar su dirección en la casilla de abajo presione enter para buscarla. En caso de que no encuentre su dirección en el buscador puede arrastrar el marcador a la posición que desea</p>
+                                            <p>Una vez haya terminado de ingresar su dirección en la casilla de abajo presione enter para buscarla.</p>
+                                            <p>En caso de que no encuentre su dirección en el buscador puede arrastrar el marcador a la posición que desea</p>
                                         </Typography>
                                     </CardContent>
                                 </Card>
