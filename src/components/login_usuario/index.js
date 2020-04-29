@@ -25,7 +25,7 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import Slide from '@material-ui/core/Slide';
-import Formulario_empleado from '../formulario_empleado';
+import Formulario_usuario from '../formulario_usuario';
 
 function Copyright() {
   return (
@@ -63,7 +63,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const Login_empleado = () => {
+const Login_usuario = () => {
   const { message, usuario } = useSelector(state => ({
     message: state.redux_reducer.message,
     usuario: state.redux_reducer.usuario,
@@ -101,9 +101,9 @@ const Login_empleado = () => {
       set_error_contrasenha(false);
       set_helper_pass('');
       set_helper_cc('');
-      fetch('http://localhost:4000/login_empleado', {
+      fetch('http://localhost:4000/login_usuario', {
         method: 'POST',
-        body: JSON.stringify({ cedula, contrasenha }), // data can be `string` or {object}!
+        body: JSON.stringify({ id: cedula, contrasenha }), // data can be `string` or {object}!
         headers: {
           'Content-Type': 'application/json'
         }
@@ -197,7 +197,7 @@ const Login_empleado = () => {
               open={open}
               TransitionComponent={Transition}
               keepMounted
-              maxWidth={'xl'}
+              maxWidth={'lg'}
               onClose={handleClose}
               aria-labelledby="alert-dialog-slide-title"
               aria-describedby="alert-dialog-slide-description"
@@ -205,7 +205,7 @@ const Login_empleado = () => {
               <DialogTitle id="alert-dialog-slide-title">{"Formulario de registro"}</DialogTitle>
               <DialogContent>
                 <DialogContentText id="alert-dialog-slide-description">
-                  <Formulario_empleado />
+                  <Formulario_usuario />
                 </DialogContentText>
               </DialogContent>
               <DialogActions>
@@ -223,4 +223,4 @@ const Login_empleado = () => {
     </Grid>
   );
 }
-export default Login_empleado;
+export default Login_usuario;

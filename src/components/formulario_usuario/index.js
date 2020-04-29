@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import Search_location from '../mapas/search_location';
 import { makeStyles } from '@material-ui/core/styles';
@@ -10,7 +9,6 @@ import Typography from '@material-ui/core/Typography';
 import { TextField, Input } from '@material-ui/core';
 import Snackbar from '@material-ui/core/Snackbar';
 import MuiAlert from '@material-ui/lab/Alert';
-import Autocomplete from '@material-ui/lab/Autocomplete';
 import { useSelector, useDispatch } from 'react-redux';
 import {
 	set_cedula,
@@ -19,20 +17,12 @@ import {
 	set_celular,
 	set_correo,
 	set_contrasenha,
-	set_servicios,
-	subio_cedula,
-	subio_foto
+	subio_foto,
+	subio_recibo
 } from '../../redux/actions';
-import { CloudUpload, CheckCircleOutline, DeleteOutline } from '@material-ui/icons';
-import Table from '@material-ui/core/Table';
-import TableBody from '@material-ui/core/TableBody';
-import TableCell from '@material-ui/core/TableCell';
-import TableContainer from '@material-ui/core/TableContainer';
-import TableHead from '@material-ui/core/TableHead';
-import TableRow from '@material-ui/core/TableRow';
-import Paper from '@material-ui/core/Paper';
+import { CloudUpload } from '@material-ui/icons';
 import Grid from '@material-ui/core/Grid';
-import { IconButton } from '@material-ui/core';
+
 
 function Alert(props) {
 	return <MuiAlert elevation={6} variant="filled" {...props} />;
@@ -101,11 +91,11 @@ function Informacion_basica() {
 	}
 	return (
 		<div style={{ justifyContent: 'center', alignItems: 'center', }}>
-			<TextField id="empleado_cedula" type="number" value={cedula} onChange={e => set_state_cedula(e.target.value)} className={classes.input} label="Cédula" variant="outlined" />
-			<TextField id="empleado_nombre" value={nombre} onChange={e => set_state_nombre(e.target.value)} className={classes.input} label="Nombre" variant="outlined" />
-			<TextField id="empleado_apellido" value={apellido} onChange={e => set_state_apellido(e.target.value)} className={classes.input} label="Apellido" variant="outlined" />
-			<TextField id="empleado_celular" type="number" value={celular} onChange={e => set_state_celular(e.target.value)} className={classes.input} label="Celular" variant="outlined" />
-			<TextField id="empleado_correo" value={correo} onChange={e => set_state_correo(e.target.value)} className={classes.input} label="Correo" variant="outlined" />
+			<TextField id="usuario_cedula" type="number" value={cedula} onChange={e => set_state_cedula(e.target.value)} className={classes.input} label="Cédula" variant="outlined" />
+			<TextField id="usuario_nombre" value={nombre} onChange={e => set_state_nombre(e.target.value)} className={classes.input} label="Nombre" variant="outlined" />
+			<TextField id="usuario_apellido" value={apellido} onChange={e => set_state_apellido(e.target.value)} className={classes.input} label="Apellido" variant="outlined" />
+			<TextField id="usuario_celular" type="number" value={celular} onChange={e => set_state_celular(e.target.value)} className={classes.input} label="Celular" variant="outlined" />
+			<TextField id="usuario_correo" value={correo} onChange={e => set_state_correo(e.target.value)} className={classes.input} label="Correo" variant="outlined" />
 		</div>
 	)
 }
@@ -118,13 +108,6 @@ function Informacion_seguridad() {
 	const [open, setOpen] = React.useState(false);
 	const [open_success, set_open_success] = React.useState(false);
 	const [message, set_message] = useState('');
-	const [ocupacion, set_ocupacion] = useState('');
-	const [valor_hora, set_valor_hora] = useState('');
-	const [valor_unidad, set_valor_unidad] = useState('');
-	const [descripcion_trabajo, set_descripcion_trabajo] = useState('');
-	const [ocupaciones, set_ocupaciones] = useState([]);
-	const [sugerencias, set_sugerencias] = useState([]);
-	const [cargando, set_cargando] = useState(false);
 	const vertical = 'top';
 	const horizontal = 'right';
 
@@ -147,83 +130,6 @@ function Informacion_seguridad() {
 	}
 	const set_doc = value => {
 		set_documento(value);
-	}
-	const add_ocupacion = () => {
-		let temp = sugerencias;
-		let ocup = ocupaciones;
-
-		if (!Number(valor_hora) && valor_hora != "0") {
-			setOpen(true);
-			set_message('El precio por hora no puede estar vacio y debe ser un número');
-		}
-		else if (!Number(valor_unidad) && valor_unidad != "0") {
-			setOpen(true);
-			set_message('El precio por unidad no puede estar vacio y debe ser un número');
-		}
-		else if (temp.filter(x => x == ocupacion).length === 0) {
-			setOpen(true);
-			set_message('Seleccione una profesión válida');
-		}
-		else if (parseFloat(valor_unidad) < 0) {
-			setOpen(true);
-			set_message('El precio por unidad debe ser mayor a cero');
-		}
-		else if (parseFloat(valor_hora) < 0) {
-			setOpen(true);
-			set_message('El precio por hora debe ser mayor a cero');
-		}
-		else {
-
-			ocup.filter(x => x.ocupacion_id === ocupacion).length === 0 ? ocup.push({ ocupacion_id: ocupacion, servicio_precio_hora: valor_hora, servicio_precio_unidad_labor: valor_unidad, servicio_descripcion: descripcion_trabajo }) : alert('Usted ya selecciono esta profesión');
-			set_ocupaciones(ocup);
-			dispatch(set_servicios(ocup));
-			set_ocupacion('');
-			set_valor_hora('');
-			set_valor_unidad('');
-			set_sugerencias([]);
-			set_descripcion_trabajo('');
-		}
-	}
-	const eliminar_ocupacion = (value) => {
-		let temp = ocupaciones;
-		for (let i = 0; i < temp.length; i++) {
-			if (value === temp[i].ocupacion_id) {
-				temp.splice(i, 1);
-			}
-		}
-		set_ocupaciones(temp);
-		dispatch(set_servicios(temp));
-	}
-	const search_ocupacion = value => {
-		set_cargando(true);
-		set_ocupacion(value);
-		fetch('http://localhost:4000/filtro_ocupacion', {
-			method: 'POST',
-			body: JSON.stringify({
-				id: value
-			}), // data can be `string` or {object}!
-			headers: {
-				'Content-Type': 'application/json'
-			}
-		}).then(res => res.json())
-			.then(response => {
-				if (response.status === 400 || response.status === 200) {
-					let sugg = [];
-					for (let i = 0; i < response.sugerencias.length; i++) {
-						sugg.push(response.sugerencias[i].ocupacion_id);
-					}
-					set_sugerencias(sugg);
-					set_cargando(false);
-				}
-				else {
-					set_sugerencias([]);
-					set_cargando(false);
-				}
-			})
-			.catch(error => {
-				set_sugerencias([]);
-				set_cargando(false);
-			});
 	}
 	const subir_foto_server = () => {
 		const data = new FormData();
@@ -253,7 +159,7 @@ function Informacion_seguridad() {
 				.catch(error => { alert(error); dispatch(subio_foto(false)); });
 		}
 	}
-	const subir_documento_server = () => {
+	const subir_recibo_server = () => {
 		const data = new FormData();
 
 		if (usuario.cedula.length === 0 || !Number(usuario.cedula)) {
@@ -266,8 +172,8 @@ function Informacion_seguridad() {
 		}
 		else {
 			data.append('cedula', usuario.cedula);
-			data.append('documento', documento);
-			fetch('http://localhost:4000/upload_cedula', {
+			data.append('recibo', documento);
+			fetch('http://localhost:4000/upload_recibos', {
 				method: 'POST',
 				headers: {
 					'Accept': 'application/json',
@@ -276,27 +182,31 @@ function Informacion_seguridad() {
 			}).then(res => res.json())
 				.then(response => {
 					set_open_success(true);
-					dispatch(subio_cedula(true));
+					dispatch(subio_recibo(true));
 				})
-				.catch(error => { alert(error); dispatch(subio_cedula(false)); });
+				.catch(error => { alert(error); dispatch(subio_recibo(false)); });
 		}
 	}
 	return (
-		<div style={{ alignContent: 'center' }}>
+		<div style={{width:'100%'}}>
 			<TextField id="contrasenha" value={contrasenha} onChange={e => set_state_contrasenha(e.target.value)} className={classes.input} label="Contraseña para el inicio de sección" variant="outlined" />
-			<div style={{ marginLeft: '20%' }}>
-				<Button variant="contained" component="label">Seleccionar foto del empleado
+			<Grid container className={classes.container_root} spacing={2}>
+				<Grid item xs={6}>
+					<Button variant="contained" component="label">Seleccionar foto usuario
 					<Input
-						type="file"
-						onChange={e => set_file(e.target.files[0])}
-						style={{ display: "none" }}
-					/>
-				</Button>
-				<Button variant="outlined" style={{ marginLeft: '3%', color: 'green' }} onClick={e => subir_foto_server()}>
-					Subir foto de la empleado
+							type="file"
+							onChange={e => set_file(e.target.files[0])}
+							style={{ display: "none" }}
+						/>
+					</Button>
+				</Grid>
+				<Grid item xs={6}>
+					<Button variant="outlined" style={{ color: 'green' }} onClick={e => subir_foto_server()}>
+						Subir foto del usuario
 					<CloudUpload style={{ fontSize: 30, marginLeft: '10px' }} />
-				</Button>
-			</div>
+					</Button>
+				</Grid>
+			</Grid>
 			<Snackbar open={open} autoHideDuration={3000} onClose={handleClose}
 				anchorOrigin={{ vertical, horizontal }}>
 				<Alert onClose={handleClose} severity="error">
@@ -309,86 +219,23 @@ function Informacion_seguridad() {
 					archivo subido al servidor
 				</Alert>
 			</Snackbar>
-			<div style={{ marginLeft: '20%', marginTop: '3%' }}>
-				<Button variant="contained" component="label" >Seleccionar foto de la cédula
-					<Input
-						type="file"
-						onChange={e => set_doc(e.target.files[0])}
-						style={{ display: "none" }}
-					/>
-				</Button>
-				<Button variant="outlined" style={{ marginLeft: '4%', color: 'green' }} onClick={e => subir_documento_server()}>
-					Subir foto de la cédula
-					<CloudUpload style={{ fontSize: 30, marginLeft: '10px' }} />
-				</Button>
-			</div>
 			<Grid container className={classes.container_root} spacing={2}>
-				<Grid item xs={2} md={2}>
-					<Autocomplete
-						options={sugerencias}
-						getOptionLabel={option => option}
-						inputValue={ocupacion}
-						onChange={(e, v) => set_ocupacion(v)}
-						renderInput={params => (
-							<TextField
-								{...params}
-								onChange={({ target }) => search_ocupacion(target.value)}
-								label="Profesión"
-								fullWidth
-							/>
-						)}
-					/>
+				<Grid item xs={6}>
+					<Button variant="contained" component="label" >Recibo servicios públicos
+					<Input
+							type="file"
+							onChange={e => set_doc(e.target.files[0])}
+							style={{ display: "none" }}
+						/>
+					</Button>
 				</Grid>
-				<Grid item xs={2} md={2}>
-					<TextField type="number" id="valor_hora" value={valor_hora} onChange={e => set_valor_hora(e.target.value)} label="Precio por hora" />
-				</Grid>
-				<Grid item xs={2} md={2}>
-					<TextField type="number" id="valor_hora" value={valor_unidad} onChange={e => set_valor_unidad(e.target.value)} label="Precio por unidad" />
-				</Grid>
-				<Grid item xs={4} md={4}>
-					<TextField
-						id="standard-textarea"
-						label="Describa sus habilidades"
-						fullWidth
-						multiline
-						value={descripcion_trabajo} onChange={e => set_descripcion_trabajo(e.target.value)}
-					/>
-				</Grid>
-				<Grid item xs={2} md={2}>
-					<Button variant="outlined" style={{ color: 'green' }} onClick={e => add_ocupacion()}>
-						Agregar
-						<CheckCircleOutline style={{ fontSize: 30, marginLeft: '10px', color: 'green' }} />
+				<Grid item xs={6}>
+					<Button variant="outlined" style={{ color: 'green' }} onClick={e => subir_recibo_server()}>
+						Subir foto del recibo
+					<CloudUpload style={{ fontSize: 30, marginLeft: '10px' }} />
 					</Button>
 				</Grid>
 			</Grid>
-
-			<TableContainer component={Paper} style={{ width: '97%' }}>
-				<Table stickyHeader={true} aria-label="simple table">
-					<TableHead>
-						<TableRow>
-							<TableCell>Ocupación</TableCell>
-							<TableCell>Precio Por Hora</TableCell>
-							<TableCell>Precio Unidad Labor</TableCell>
-							<TableCell>Descripción</TableCell>
-							<TableCell>Eliminar</TableCell>
-						</TableRow>
-					</TableHead>
-					<TableBody>
-
-						{
-							ocupaciones.map((element) => (
-								<TableRow key={element.ocupacion_id}>
-									<TableCell>{element.ocupacion_id}</TableCell>
-									<TableCell>{element.servicio_precio_hora}</TableCell>
-									<TableCell>{element.servicio_precio_unidad_labor}</TableCell>
-									<TableCell>{element.servicio_descripcion}</TableCell>
-									<TableCell><IconButton onClick={e => eliminar_ocupacion(element.ocupacion_id)} children={<DeleteOutline style={{ fontSize: 30, marginLeft: '10px', color: 'red' }} />} /></TableCell>
-								</TableRow>
-							))
-						}
-					</TableBody>
-				</Table>
-			</TableContainer>
 		</div>
 	)
 }
@@ -406,7 +253,7 @@ function getStepContent(step) {
 	}
 }
 
-export default function Formulario_empleado() {
+export default function Formulario_usuario() {
 	const classes = useStyles();
 	const vertical = 'top';
 	const horizontal = 'right';
@@ -417,12 +264,12 @@ export default function Formulario_empleado() {
 	const [activeStep, setActiveStep] = React.useState(0);
 	const [skipped, setSkipped] = React.useState(new Set());
 	const steps = getSteps();
-	const { usuario, direccion, coordenadas,subio_fot,subio_doc } = useSelector(state => ({
+	const { usuario, direccion, coordenadas, subio_fot, subio_doc } = useSelector(state => ({
 		usuario: state.redux_reducer.usuario,
 		coordenadas: state.redux_reducer.coordenadas,
 		direccion: state.redux_reducer.direccion,
 		subio_fot: state.redux_reducer.subio_fot,
-		subio_doc: state.redux_reducer.subio_doc
+		subio_recibo: state.redux_reducer.subio_recibo
 	}));
 	const dispatch = useDispatch();
 	const handleClose = () => {
@@ -458,7 +305,7 @@ export default function Formulario_empleado() {
 		}
 	}
 	const subir_formulario = () => {
-		if (usuario.servicios.length < 1 || !subio_doc|| !subio_fot || direccion.length === 0 || !Number(usuario.cedula) || usuario.nombre.length === 0 || usuario.apellido.length === 0 || !Number(usuario.celular) || !usuario.correo.includes('@') || usuario.contrasenha.length < 7) {
+		if (!subio_recibo || !subio_fot || direccion.length === 0 || !Number(usuario.cedula) || usuario.nombre.length === 0 || usuario.apellido.length === 0 || !Number(usuario.celular) || !usuario.correo.includes('@') || usuario.contrasenha.length < 7) {
 
 			if (!Number(usuario.cedula)) {
 				set_message('la cédula no puede estar vacia y debe ser un dato tipo numérico');
@@ -481,23 +328,20 @@ export default function Formulario_empleado() {
 			if (direccion.length === 0) {
 				set_message('seleccione una dirección válida');
 			}
-			if(!subio_fot){
-				set_message('necesita subir una foto del empleado');
+			if (!subio_fot) {
+				set_message('necesita subir una foto del usuario');
 			}
-			if(!subio_doc){
-				set_message('necesita subir un documento del empleado');
-			}
-			if(usuario.servicios.length < 1){
-				set_message('necesita seleccionar al menos un servicio');
+			if (!subio_recibo) {
+				set_message('necesita subir un documento del usuario');
 			}
 			setOpen(true);
 		}
 		else {
 			setOpen(false);
-			fetch('http://localhost:4000/crear_empleado', {
+			fetch('http://localhost:4000/crear_usuario', {
 				method: 'POST',
 				body: JSON.stringify({
-					cedula: usuario.cedula,
+					id: usuario.cedula,
 					nombre: usuario.nombre,
 					apellido: usuario.apellido,
 					celular: usuario.celular,
@@ -505,8 +349,7 @@ export default function Formulario_empleado() {
 					latitud: coordenadas.lat,
 					longitud: coordenadas.lng,
 					direccion,
-					contrasenha: usuario.contrasenha,
-					servicios: JSON.stringify([])
+					contrasenha: usuario.contrasenha
 				}), // data can be `string` or {object}!
 				headers: {
 					'Content-Type': 'application/json'
@@ -526,10 +369,9 @@ export default function Formulario_empleado() {
 						dispatch(set_apellido(''));
 						dispatch(set_celular(''));
 						dispatch(set_correo(''));
-						dispatch(set_servicios([]));
 						dispatch(set_contrasenha(''));
 						dispatch(subio_foto(false));
-						dispatch(subio_cedula(false));
+						dispatch(subio_recibo(false));
 					}
 				})
 				.catch(error => {
@@ -621,7 +463,7 @@ export default function Formulario_empleado() {
 				) : (
 						<div>
 							<div className={classes.instructions}>{getStepContent(activeStep)}</div>
-							<div style={{ marginLeft: '38%', marginTop: '3%' }}>
+							<div style={{ marginLeft: '40%', marginTop: '3%' }}>
 								<Button style={{ color: 'gray' }} disabled={activeStep === 0} onClick={handleBack} variant="outlined" >
 									Regresar
 								</Button>
@@ -630,12 +472,12 @@ export default function Formulario_empleado() {
 										variant="contained"
 										color="primary"
 										onClick={e => subir_formulario()}
-										style={{ marginLeft: '5%', color: 'white', background: 'green' }}>Finalizar
+										style={{color: 'white', background: 'green' }}>Finalizar
 									</Button> :
 									<Button
 										variant="contained"
 										onClick={e => comprobar_info()}
-										style={{ marginLeft: '5%', color: 'white', background: 'green' }}>Siguiente
+										style={{ color: 'white', background: 'green' }}>Siguiente
 									</Button>}
 
 							</div>

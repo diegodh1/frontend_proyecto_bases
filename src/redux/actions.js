@@ -1,5 +1,5 @@
-export const ERROR_LOGIN_EMPLEADO = 'ERROR_LOGIN_EMPLEADO';
-export const SUCCESS_LOGIN_EMPLEADO = 'SUCCESS_LOGIN_EMPLEADO';
+export const ERROR_LOGIN = 'ERROR_LOGIN';
+export const SUCCESS_LOGIN = 'SUCCESS_LOGIN';
 export const SET_COORDINATES = 'SET_COORDINATES';
 export const SET_ADDRESS = 'SET_ADDRESS';
 export const SET_CEDULA = 'SET_CEDULA';
@@ -11,17 +11,18 @@ export const SET_CONTRASENHA = 'SET_CONTRASENHA';
 export const SET_SERVICIOS = 'SET_SERVICIOS';
 export const SUBIO_FOTO = 'SUBIO_FOTO';
 export const SUBIO_CEDULA = 'SUBIO_CEDULA';
+export const SUBIO_RECIBO = 'SUBIO_RECIBO';
 
 //******************LOGIN*******************
-export const success_login_empleado = payload => {
+export const success_login = payload => {
     return {
-        type: SUCCESS_LOGIN_EMPLEADO,
+        type: SUCCESS_LOGIN,
         payload
     }
 }
-export const error_login_empleado = payload => {
+export const error_login = payload => {
     return {
-        type: ERROR_LOGIN_EMPLEADO,
+        type: ERROR_LOGIN,
         payload
     }
 }
@@ -88,6 +89,12 @@ export const subio_foto = payload => {
 export const subio_cedula = payload => {
     return {
         type: SUBIO_CEDULA,
+        payload
+    }
+}
+export const subio_recibo = payload => {
+    return {
+        type: SUBIO_RECIBO,
         payload
     }
 }
