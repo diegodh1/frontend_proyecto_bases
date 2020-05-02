@@ -506,7 +506,7 @@ export default function Formulario_empleado() {
 					longitud: coordenadas.lng,
 					direccion,
 					contrasenha: usuario.contrasenha,
-					servicios: JSON.stringify([])
+					servicios: JSON.stringify(usuario.servicios)
 				}), // data can be `string` or {object}!
 				headers: {
 					'Content-Type': 'application/json'

@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { success_login, error_login } from '../../redux/actions';
 import { withRouter, Redirect } from 'react-router-dom';
 import Button from '@material-ui/core/Button';
 import CssBaseline from '@material-ui/core/CssBaseline';
@@ -26,6 +25,7 @@ import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import Slide from '@material-ui/core/Slide';
 import Formulario_usuario from '../formulario_usuario';
+import { success_login, error_login } from '../../redux/actions';
 
 function Copyright() {
   return (
@@ -64,9 +64,9 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const Login_usuario = () => {
-  const { message, usuario } = useSelector(state => ({
+  const { message, usuario, usuario_login } = useSelector(state => ({
     message: state.redux_reducer.message,
-    usuario: state.redux_reducer.usuario,
+    usuario: state.redux_reducer.usuario
   }));
   const dispatch = useDispatch()
   const [cedula, set_cedula] = useState('');
@@ -109,8 +109,8 @@ const Login_usuario = () => {
         }
       }).then(res => res.json())
         .then(response => {
-          response.message !== "Ingreso realizado" ? dispatch(error_login(response)) : dispatch(success_login(response));
-          response.message !== "Ingreso realizado" ? set_pass_invalid(true) : window.location.href = "http://localhost:3000/formulario_empleado";
+          response.status !== 200 ? dispatch(error_login(response)) : dispatch(success_login(response));
+          response.status !== 200 ? set_pass_invalid(true) : set_pass_invalid(false);
 
         })
         .catch(error => alert(error));
@@ -118,6 +118,7 @@ const Login_usuario = () => {
   }
   return (
     <Grid container component="main" className={classes.root}>
+      {usuario.status===200 ? <Redirect to="/inicio_usuario" /> : null}
       <CssBaseline />
       <Grid item xs={false} sm={4} md={8} className={classes.image}>
         <video width="95%" autoplay="autoPlay" loop muted>

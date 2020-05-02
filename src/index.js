@@ -7,7 +7,7 @@ import Login_empleado from './components/login_empleado';
 import Formulario_empleado from './components/formulario_empleado';
 import Formulario_usuario from './components/formulario_usuario';
 import Login_usuario from './components/login_usuario';
-import Inicio from './components/inicio';
+import Dashboard from './components/inicio_usuario';
 
 
 const Root = (
@@ -18,7 +18,7 @@ const Root = (
         <Route path="/login_usuario" component={Login_usuario}/>
         <Route path="/formulario_empleado" component={Formulario_empleado}/>
         <Route path="/formulario_usuario" component={Formulario_usuario}/>
-        <Route path="/inicio" component={Inicio}/>
+        <Route path="/inicio_usuario" component={Dashboard}/>
         <Redirect from="/" to="/login_usuario" />
     </Switch>
     </BrowserRouter>

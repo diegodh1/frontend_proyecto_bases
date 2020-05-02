@@ -12,6 +12,7 @@ export const SET_SERVICIOS = 'SET_SERVICIOS';
 export const SUBIO_FOTO = 'SUBIO_FOTO';
 export const SUBIO_CEDULA = 'SUBIO_CEDULA';
 export const SUBIO_RECIBO = 'SUBIO_RECIBO';
+export const SET_NAVBAR = 'SET_NAVBAR';
 
 //******************LOGIN*******************
 export const success_login = payload => {
@@ -98,4 +99,9 @@ export const subio_recibo = payload => {
         payload
     }
 }
-
+export const set_navbar = payload => {
+    return {
+        type: SET_NAVBAR,
+        payload
+    }
+}

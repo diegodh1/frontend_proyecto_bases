@@ -68,7 +68,7 @@ const Login_empleado = () => {
     message: state.redux_reducer.message,
     usuario: state.redux_reducer.usuario,
   }));
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
   const [cedula, set_cedula] = useState('');
   const [contrasenha, set_contrasenha] = useState('');
   const [error_cedula, set_error_cedula] = useState(false);
