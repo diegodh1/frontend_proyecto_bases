@@ -17,8 +17,6 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 import Slide from '@material-ui/core/Slide';
 import Snackbar from '@material-ui/core/Snackbar';
 import Alert from '@material-ui/lab/Alert';
-import Typography from '@material-ui/core/Typography';
-import Rating from '@material-ui/lab/Rating';
 import MenuItem from '@material-ui/core/MenuItem';
 import Select from '@material-ui/core/Select';
 
@@ -50,41 +48,39 @@ const Servicio_pedido = () => {
     const [servicios_pedidos, set_servicios_pedidos] = React.useState([]);
     const [value, setValue] = React.useState('PENDIENTE');
     const [open, setOpen] = React.useState(false);
-    const [calificar, set_calificar] = React.useState(false);
-    const [calificacion, set_calificacion] = React.useState(0);
     const [servicio_pedido_id, set_servicio_pedido_id] = React.useState('');
     const [success, set_success] = useState(false);
     const [error, set_error] = useState(false);
     const [message_dialog, set_message_dialog] = useState('');
-    const vertical = 'bottom';
+    const vertical = 'center';
     const horizontal = 'right';
-    const [operacion, set_operacion] = React.useState('FINALIZAR');
-    const [servicio_nro, set_servicio_nro] = useState(0);
+    const [operacion, set_operacion] = React.useState('CANCELADO');
 
-    const handleClickOpen = (id_pedido, servicio_nro) => {
+    const handleClickOpen = (id_pedido) => {
         set_servicio_pedido_id(id_pedido);
-        set_servicio_nro(servicio_nro);
         setOpen(true);
     };
 
     const handleClose = () => {
         setOpen(false);
-        if (value === 'PENDIENTE') {
-            actualizar_servicio_pedido(servicio_pedido_id, "CANCELADO");
-            get_servicios(value);
+        let fecha = new Date();
+        let fecha_hora = fecha.getFullYear() + "-" + ("0" + (fecha.getMonth() + 1)).slice(-2) + "-" + ("0" + fecha.getDate()).slice(-2) + " " + ("0" + fecha.getHours()).slice(-2) + ":" + ("0" + fecha.getMinutes()).slice(-2) + ":" + ("0" + fecha.getSeconds()).slice(-2) + "-5";
+        if (operacion !== 'ACEPTADO') {
+            if (value === 'ACEPTADO') {
+                actualizar_servicio_aceptado(servicio_pedido_id, operacion);
+                if(operacion==='CANCELADO'){
+                    actualizar_servicio_pedido(servicio_pedido_id, operacion);
+                }
+            }
+            else{
+                actualizar_servicio_pedido(servicio_pedido_id, operacion);
+            }
         }
         else {
-            actualizar_servicio_aceptado(servicio_pedido_id, operacion);
-            if (operacion === 'CANCELADO') {
-                actualizar_servicio_pedido(servicio_pedido_id, operacion);
-                get_servicios(value);
-            }
-            if(operacion ==='FINALIZADO'){
-                get_servicios(value);
-                set_calificar(true);
-                
-            }
+            aceptar_servicio(servicio_pedido_id, fecha_hora);
+            actualizar_servicio_pedido(servicio_pedido_id, operacion);
         }
+        get_servicios(value);
     };
     const handleChange = (event) => {
         setValue(event.target.value);
@@ -99,45 +95,14 @@ const Servicio_pedido = () => {
         setRowsPerPage(+event.target.value);
         setPage(0);
     };
-    const dar_puntuacion = () => {
-        let fecha = new Date();
-        let puntuacion_fecha = fecha.getFullYear() + "-" + ("0" + (fecha.getMonth() + 1)).slice(-2) + "-" + ("0" + fecha.getDate()).slice(-2) + " " + ("0" + fecha.getHours()).slice(-2) + ":" + ("0" + fecha.getMinutes()).slice(-2) + ":" + ("0" + fecha.getSeconds()).slice(-2) + "-5";
-        fetch('http://localhost:4000/puntuacion_dar', {
-            method: 'POST',
-            body: JSON.stringify({
-                servicio_nro,
-                calificacion,
-                puntuacion_fecha
-            }), // data can be `string` or {object}!
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        }).then(res => res.json())
-            .then(response => {
-                if (response.status === 200) {
-                    set_success(true);
-                    set_message_dialog(response.message);
-                }
-                else {
-                    set_error(true);
-                    set_message_dialog(response.message);
-                }
-            })
-            .catch(error => {
-                set_error(true);
-                set_message_dialog(error);
-            });
-        get_servicios(value);
-        set_calificar(false);
-    };
     const get_servicios = estado => {
-        let temp = 'http://localhost:4000/get_ultimos_servicios_pedidos';
+        let temp = 'http://localhost:4000/get_servicios_pedidos_trabajdor';
 
-        let ruta = estado !== 'PENDIENTE' && estado !== 'CANCELADO' ? 'http://localhost:4000/get_ultimos_servicios_aceptados' : temp;
+        let ruta = estado !== 'PENDIENTE' && estado !== 'CANCELADO' ? 'http://localhost:4000/get_servicios_aceptados_trabajador' : temp;
         fetch(ruta, {
             method: 'POST',
             body: JSON.stringify({
-                usuario_id: usuario.id,
+                usuario_id: usuario.cedula,
                 estado_servicio_id: estado,
                 limite: 2
             }), // data can be `string` or {object}!
@@ -158,33 +123,6 @@ const Servicio_pedido = () => {
             });
     }
 
-    const actualizar_servicio_aceptado = (servicio_pedido_id, estado_servicio_id) => {
-
-        fetch('http://localhost:4000/update_servicio_aceptado', {
-            method: 'POST',
-            body: JSON.stringify({
-                servicio_pedido_id,
-                estado_servicio_id
-            }), // data can be `string` or {object}!
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        }).then(res => res.json())
-            .then(response => {
-                if (response.status === 200) {
-                    set_success(true);
-                    set_message_dialog(response.message);
-                }
-                else {
-                    set_error(true);
-                    set_message_dialog(response.message);
-                }
-            })
-            .catch(error => {
-                set_error(true);
-                set_message_dialog(error);
-            });
-    }
     const actualizar_servicio_pedido = (servicio_pedido_id, estado_servicio) => {
 
         fetch('http://localhost:4000/modificar_estado_servicio', {
@@ -212,12 +150,66 @@ const Servicio_pedido = () => {
                 set_message_dialog(error);
             });
     }
+    const actualizar_servicio_aceptado = (servicio_pedido_id, estado_servicio_id) => {
 
-    useEffect(() => {
-        fetch('http://localhost:4000/get_ultimos_servicios_pedidos', {
+        fetch('http://localhost:4000/update_servicio_aceptado', {
             method: 'POST',
             body: JSON.stringify({
-                usuario_id: usuario.id,
+                servicio_pedido_id,
+                estado_servicio_id
+            }), // data can be `string` or {object}!
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        }).then(res => res.json())
+            .then(response => {
+                if (response.status === 200) {
+                    set_success(true);
+                    set_message_dialog(response.message);
+                }
+                else {
+                    set_error(true);
+                    set_message_dialog(response.message);
+                }
+            })
+            .catch(error => {
+                set_error(true);
+                set_message_dialog(error);
+            });
+    }
+    const aceptar_servicio = (servicio_pedido_id, servicio_aceptado_fecha) => {
+
+        fetch('http://localhost:4000/aceptar_servicio', {
+            method: 'POST',
+            body: JSON.stringify({
+                servicio_pedido_id,
+                servicio_aceptado_fecha
+            }), // data can be `string` or {object}!
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        }).then(res => res.json())
+            .then(response => {
+                if (response.status === 200) {
+                    set_success(true);
+                    set_message_dialog(response.message);
+                }
+                else {
+                    set_error(true);
+                    set_message_dialog(response.message);
+                }
+            })
+            .catch(error => {
+                set_error(true);
+                set_message_dialog(error);
+            });
+    }
+
+    useEffect(() => {
+        fetch('http://localhost:4000/get_servicios_pedidos_trabajdor', {
+            method: 'POST',
+            body: JSON.stringify({
+                usuario_id: usuario.cedula,
                 estado_servicio_id: 'PENDIENTE',
                 limite: 2
             }), // data can be `string` or {object}!
@@ -261,7 +253,9 @@ const Servicio_pedido = () => {
                             <TableRow>
                                 <TableCell>Nro</TableCell>
                                 <TableCell>Fecha</TableCell>
-                                <TableCell>Empleado</TableCell>
+                                <TableCell>Nombre Cliente</TableCell>
+                                <TableCell>Celular</TableCell>
+                                <TableCell>Solicitud</TableCell>
                                 <TableCell>Es por horas?</TableCell>
                                 <TableCell>Precio x hora</TableCell>
                                 <TableCell>Precio x unidad</TableCell>
@@ -269,7 +263,7 @@ const Servicio_pedido = () => {
                                 <TableCell># de unidades</TableCell>
                                 <TableCell>Valor a Pagar</TableCell>
                                 <TableCell>Estado</TableCell>
-                                <TableCell>Finalizar/Cancelar</TableCell>
+                                <TableCell>Modificar</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
@@ -278,7 +272,9 @@ const Servicio_pedido = () => {
                                     <TableRow hover role="checkbox" tabIndex={-1} key={row.servicio_pedido_id}>
                                         <TableCell>{row.servicio_pedido_id}</TableCell>
                                         <TableCell>{row.fecha}</TableCell>
-                                        <TableCell>{row.trabajador_cedula}</TableCell>
+                                        <TableCell>{row.usuario_nombre}</TableCell>
+                                        <TableCell>{row.usuario_celular}</TableCell>
+                                        <TableCell>{row.ocupacion_id}</TableCell>
                                         <TableCell>
                                             <Switch
                                                 checked={row.servicio_pedido_es_por_hora}
@@ -294,11 +290,11 @@ const Servicio_pedido = () => {
                                         <TableCell>{row.valor_servicio}</TableCell>
                                         <TableCell>{row.estado_servicio_id}</TableCell>
                                         {value !== 'PENDIENTE' && value !== 'ACEPTADO' && value !== 'OCUPADO' ? <TableCell>
-                                            <IconButton disabled={true} style={{ color: 'gray' }} aria-label="upload picture" component="span" onClick={e => handleClickOpen(row.servicio_pedido_id, row.servicio_nro)}>
+                                            <IconButton disabled={true} style={{ color: 'gray' }} aria-label="upload picture" component="span" onClick={e => handleClickOpen(row.servicio_pedido_id)}>
                                                 <Edit />
                                             </IconButton>
                                         </TableCell> : <TableCell>
-                                                <IconButton style={{ color: 'red' }} aria-label="upload picture" component="span" onClick={e => handleClickOpen(row.servicio_pedido_id, row.servicio_nro)}>
+                                                <IconButton style={{ color: 'red' }} aria-label="upload picture" component="span" onClick={e => handleClickOpen(row.servicio_pedido_id)}>
                                                     <Edit />
                                                 </IconButton>
                                             </TableCell>}
@@ -329,55 +325,34 @@ const Servicio_pedido = () => {
                 aria-describedby="alert-dialog-slide-description"
             >
                 <DialogTitle>
-                    Qué desea realizar con el servicio?
+                    Qué operación desea realizar con el servicio?
                 </DialogTitle>
-                {value === 'ACEPTADO' ? <Select
-                    labelId="Seleccionar Operación"
-                    id="demo-simple-select"
-                    style={{ width: '75%', marginLeft: '10%' }}
-                    value={operacion}
-                    onChange={e => set_operacion(e.target.value)}
-                >
-                    <MenuItem value="FINALIZADO">FINALIZAR</MenuItem>
-                    <MenuItem value="CANCELADO">CANCELAR</MenuItem>
-                </Select> : <Select
-                    labelId="Seleccionar Operación"
-                    id="demo-simple-select"
-                    style={{ width: '75%', marginLeft: '10%' }}
-                    value={operacion}
-                    onChange={e => set_operacion(e.target.value)}
-                >
-                        <MenuItem value="FINALIZADO">FINALIZAR</MenuItem>
+                {value === 'ACEPTADO' ?
+                    <Select
+                        labelId="Seleccionar Operación"
+                        id="demo-simple-select"
+                        style={{ width: '50%', marginLeft: '25%' }}
+                        value={operacion}
+                        onChange={e => set_operacion(e.target.value)}
+                    >
+                        <MenuItem value="CANCELADO">CANCELAR</MenuItem>
+                    </Select> :
+                    <Select
+                        labelId="Seleccionar Operación"
+                        id="demo-simple-select"
+                        style={{ width: '50%', marginLeft: '25%' }}
+                        value={operacion}
+                        onChange={e => set_operacion(e.target.value)}
+                    >
+                        <MenuItem value="ACEPTADO">ACEPTAR</MenuItem>
+                        <MenuItem value="CANCELADO">CANCELAR</MenuItem>
                     </Select>}
-                <DialogActions>
+                <DialogActions style={{ marginRight: '15%' }}>
                     <Button style={{ color: 'red' }} onClick={e => setOpen(false)} color="primary">
                         Anular Cambios
                     </Button>
                     <Button style={{ color: 'green' }} onClick={e => handleClose()} color="primary">
                         Aceptar Cambios
-                    </Button>
-                </DialogActions>
-            </Dialog>
-            <Dialog
-                open={calificar}
-                TransitionComponent={Transition}
-                keepMounted
-                onClose={set_calificar}
-                aria-labelledby="alert-dialog-slide-title"
-                aria-describedby="alert-dialog-slide-description"
-            >
-                <DialogTitle>
-                    Del 1 al 5 cual es su calificación para el servicio?
-                </DialogTitle>
-                <DialogContent>
-                    <div style={{ textAlign: 'center', marginTop: '5%' }}>
-                        <Typography component="legend">Calificación</Typography>
-                        <Rating name="read-only" value={calificacion} onChange={e => set_calificacion(e.target.value)} />
-                    </div>
-                </DialogContent>
-                <DialogActions style={{ marginRight: '20%' }}>
-                    <Button style={{ color: 'green' }} onClick={e => dar_puntuacion()} color="primary">
-                        Cerrar
                     </Button>
                 </DialogActions>
             </Dialog>

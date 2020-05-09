@@ -110,7 +110,7 @@ const Login_empleado = () => {
       }).then(res => res.json())
         .then(response => {
           response.message !== "Ingreso realizado" ? dispatch(error_login(response)) : dispatch(success_login(response));
-          response.message !== "Ingreso realizado" ? set_pass_invalid(true) : window.location.href = "http://localhost:3000/formulario_empleado";
+          response.message !== "Ingreso realizado" ? set_pass_invalid(true) : set_pass_invalid(false);
 
         })
         .catch(error => alert(error));
@@ -118,6 +118,7 @@ const Login_empleado = () => {
   }
   return (
     <Grid container component="main" className={classes.root}>
+      {usuario.status===200 ? <Redirect to="/inicio_empleado" /> : null}
       <CssBaseline />
       <Grid item xs={false} sm={4} md={8} className={classes.image}>
         <video width="95%" autoplay="autoPlay" loop muted>
