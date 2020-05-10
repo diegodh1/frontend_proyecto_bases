@@ -197,8 +197,7 @@ const Login_empleado = () => {
             <Dialog
               open={open}
               TransitionComponent={Transition}
-              keepMounted
-              maxWidth={'xl'}
+              fullScreen
               onClose={handleClose}
               aria-labelledby="alert-dialog-slide-title"
               aria-describedby="alert-dialog-slide-description"
@@ -211,11 +210,8 @@ const Login_empleado = () => {
               </DialogContent>
               <DialogActions>
                 <Button onClick={handleClose} color="primary">
-                  Disagree
-          </Button>
-                <Button onClick={handleClose} color="primary">
-                  Agree
-          </Button>
+                  CERRAR FORMULARIO
+                </Button>
               </DialogActions>
             </Dialog>
           </form>

@@ -19,6 +19,8 @@ import Snackbar from '@material-ui/core/Snackbar';
 import Alert from '@material-ui/lab/Alert';
 import MenuItem from '@material-ui/core/MenuItem';
 import Select from '@material-ui/core/Select';
+import Badge from '@material-ui/core/Badge';
+import MailIcon from '@material-ui/icons/Mail';
 
 const useStyles = makeStyles({
     table: {
@@ -51,6 +53,7 @@ const Servicio_pedido = () => {
     const [servicio_pedido_id, set_servicio_pedido_id] = React.useState('');
     const [success, set_success] = useState(false);
     const [error, set_error] = useState(false);
+    const [cantidad_pendientes, set_cantidad_pendientes] = useState(0);
     const [message_dialog, set_message_dialog] = useState('');
     const vertical = 'center';
     const horizontal = 'right';
@@ -68,11 +71,11 @@ const Servicio_pedido = () => {
         if (operacion !== 'ACEPTADO') {
             if (value === 'ACEPTADO') {
                 actualizar_servicio_aceptado(servicio_pedido_id, operacion);
-                if(operacion==='CANCELADO'){
+                if (operacion === 'CANCELADO') {
                     actualizar_servicio_pedido(servicio_pedido_id, operacion);
                 }
             }
-            else{
+            else {
                 actualizar_servicio_pedido(servicio_pedido_id, operacion);
             }
         }
@@ -83,8 +86,8 @@ const Servicio_pedido = () => {
         get_servicios(value);
     };
     const handleChange = (event) => {
-        setValue(event.target.value);
-        get_servicios(event.target.value);
+        setValue(event);
+        get_servicios(event);
     };
 
     const handleChangePage = (event, newPage) => {
@@ -95,6 +98,10 @@ const Servicio_pedido = () => {
         setRowsPerPage(+event.target.value);
         setPage(0);
     };
+    const defaultProps = {
+        color: 'secondary',
+        children: <MailIcon />,
+      };
     const get_servicios = estado => {
         let temp = 'http://localhost:4000/get_servicios_pedidos_trabajdor';
 
@@ -229,15 +236,37 @@ const Servicio_pedido = () => {
                 alert(error);
             });
     }, []);
-
-
+    setInterval(() => {
+        fetch('http://localhost:4000/get_servicios_pedidos_trabajdor', {
+            method: 'POST',
+            body: JSON.stringify({
+                usuario_id: usuario.cedula,
+                estado_servicio_id: 'PENDIENTE',
+                limite: 2
+            }), // data can be `string` or {object}!
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        }).then(res => res.json())
+            .then(response => {
+                if (response.status === 200) {
+                    set_cantidad_pendientes(response.servicios.length);
+                }
+                else {
+                    set_cantidad_pendientes(response.servicios.length);
+                }
+            })
+            .catch(error => {
+                console.log(error);
+            });
+    }, 3000);
     return (
         <Fragment>
-            <h1 style={{ textAlign: 'center' }}><u>Ultimos Servicios Solicitados</u></h1>
+            <h1 style={{ textAlign: 'center', color:'gray' }}><u>Ultimos Servicios Solicitados</u></h1>
             <br></br>
             <FormControl component="fieldset" style={{ flexDirection: "row" }}>
                 <FormLabel component="legend">Filtrar por servicios</FormLabel>
-                <RadioGroup row aria-label="servicios_group" name="servicios_group" value={value} onChange={handleChange}>
+                <RadioGroup row aria-label="servicios_group" name="servicios_group" value={value} onChange={e=>handleChange(e.target.value)}>
                     <FormControlLabel value="PENDIENTE" control={<Radio />} label="Pendientes" />
                     <FormControlLabel value="FINALIZADO" control={<Radio />} label="Finalizados" />
                     <FormControlLabel value="CANCELADO" control={<Radio />} label="Cancelados" />
@@ -315,7 +344,12 @@ const Servicio_pedido = () => {
                     onChangeRowsPerPage={handleChangeRowsPerPage}
                 />
             </Paper>
-
+            {cantidad_pendientes!==0?
+            <div style={{textAlign:'center', marginTop:'5%'}}>
+                <Button color="secondary" onClick={e => handleChange("PENDIENTE")}>Tienes algunos servicios pendientes</Button>
+                <Badge badgeContent={cantidad_pendientes} {...defaultProps} />
+            </div>:
+            null}
             <Dialog
                 open={open}
                 TransitionComponent={Transition}

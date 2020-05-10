@@ -20,7 +20,7 @@ import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
 import NotificationsIcon from '@material-ui/icons/Notifications';
 import { mainListItems, secondaryListItems } from './listItems';
 import Chart from './Chart';
-import Deposits from './Deposits';
+import Reporte from './reporte';
 import Orders from './Orders';
 import Pedido from './pedido';
 import Servicio_pedido from './servicios_pedidos';
@@ -149,13 +149,8 @@ export default function Dashboard_empleado() {
               <MenuIcon />
             </IconButton>
             <Typography component="h1" variant="h6" color="inherit" noWrap className={classes.title}>
-              Dashboard
+              Mande Tech
           </Typography>
-            <IconButton color="inherit">
-              <Badge badgeContent={4} color="secondary">
-                <NotificationsIcon />
-              </Badge>
-            </IconButton>
           </Toolbar>
         </AppBar>
 
@@ -174,13 +169,13 @@ export default function Dashboard_empleado() {
           <Divider />
           <List>{mainListItems}</List>
           <Divider />
-          <List>{secondaryListItems}</List>
         </Drawer>
         <main className={classes.content}>
           <div className={classes.appBarSpacer} />
           <Container maxWidth="lg" className={classes.container}>
             <Switch>
               <Route path="/pedidos" component={Pedido} />
+              <Route path="/reporte" component={Reporte} />
               <Route path="/" component={Servicio_pedido} />
             </Switch>
           </Container>

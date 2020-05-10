@@ -1,39 +1,26 @@
-import React, { useState, Fragment } from 'react';
+import React, { useState, Fragment, useEffect } from 'react';
 import { useSelector, useDispatch, shallowEqual } from 'react-redux';
 import Autocomplete from '@material-ui/lab/Autocomplete';
 import {
     TextField,
-    Input,
-    Divider,
     Grid,
     IconButton,
     Tooltip,
-    LinearProgress,
-    Dialog,
-    DialogActions,
-    DialogContent,
-    DialogContentText,
-    DialogTitle,
     Slide,
-    Radio,
-    RadioGroup,
-    FormControlLabel,
-    FormControl,
-    FormLabel
 } from '@material-ui/core';
-import { MuiPickersUtilsProvider, KeyboardDatePicker, KeyboardTimePicker } from '@material-ui/pickers';
-import DateFnsUtils from '@date-io/date-fns';
 import { makeStyles } from '@material-ui/core/styles';
 import Search from '@material-ui/icons/Search';
-import Card from '@material-ui/core/Card';
-import CardActions from '@material-ui/core/CardActions';
-import CardContent from '@material-ui/core/CardContent';
 import Button from '@material-ui/core/Button';
-import Typography from '@material-ui/core/Typography';
-import Rating from '@material-ui/lab/Rating';
 import Snackbar from '@material-ui/core/Snackbar';
-import Box from '@material-ui/core/Box';
 import Alert from '@material-ui/lab/Alert';
+import { CheckCircleOutline, DeleteOutline } from '@material-ui/icons';
+import Table from '@material-ui/core/Table';
+import TableBody from '@material-ui/core/TableBody';
+import TableCell from '@material-ui/core/TableCell';
+import TableContainer from '@material-ui/core/TableContainer';
+import TableHead from '@material-ui/core/TableHead';
+import TableRow from '@material-ui/core/TableRow';
+import Paper from '@material-ui/core/Paper';
 
 
 const Transition = React.forwardRef(function Transition(props, ref) {
@@ -61,7 +48,7 @@ const useStyles = makeStyles((theme) => ({
     scroll_grid: {
         height: '500px',
         overflowY: 'scroll'
-    }
+    },
 }));
 
 
@@ -73,114 +60,65 @@ export default function Pedido() {
     }));
     const dispatch = useDispatch();
     const [sugerencias, set_sugerencias] = useState([]);
-    const [empleados, set_empleados] = useState([]);
-    const [limite, set_limite] = useState(1);
     const [ocupacion, set_ocupacion] = useState('');
     const [cargando, set_cargando] = useState(false);
-    const [servicio_descripcion, set_sercicio_descripcion] = useState('');
-    const [cantida_horas, set_cantidad_horas] = useState('');
-    const [cantidad_unidades, set_cantidad_unidades] = useState('');
-    const [es_por_horas, set_es_por_horas] = useState(true);
-    const [fecha, set_selected_date] = React.useState(new Date());
-    const [servicio_nro, set_servicio_nro] = useState(-1);
+    const [ocupaciones, set_ocupaciones] = useState([]);
+    const [ocupaciones_temp, set_ocupaciones_temp] = useState([]);
+    const [descripcion_trabajo, set_descripcion_trabajo] = useState('');
+    const [valor_hora, set_valor_hora] = useState('');
+    const [valor_unidad, set_valor_unidad] = useState('');
     const [error, set_error] = React.useState(false);
     const [error_message, set_error_message] = useState('');
     const [success, set_success] = React.useState(false);
     const [success_message, set_success_message] = useState('');
     const [open, setOpen] = React.useState(false);
-    const [tipo_servicio, set_tipo_servicio] = React.useState('Por Horas');
-    const vertical = 'center';
+    const vertical = 'top';
     const horizontal = 'right';
 
-    const subir_formulario_servicio = () => {
-        if (servicio_descripcion === '') {
+    const add_ocupacion = () => {
+        let temp = sugerencias;
+        let ocup = ocupaciones_temp;
+
+        if (!Number(valor_hora) && valor_hora != "0") {
             set_error(true);
-            set_error_message('Por favor escriba una breve descripción');
+            set_error_message('El precio por hora no puede estar vacio y debe ser un número');
         }
-        else if (es_por_horas == true && !Number(cantida_horas)) {
+        else if (!Number(valor_unidad) && valor_unidad != "0") {
             set_error(true);
-            set_error_message('Por favor ingrese el número de horas');
+            set_error_message('El precio por unidad no puede estar vacio y debe ser un número');
         }
-        else if (es_por_horas == true && parseFloat(cantida_horas) < 1) {
+        else if (temp.filter(x => x == ocupacion).length === 0) {
             set_error(true);
-            set_error_message('La cantidad de horas debe ser mayor o igual a 1 hora');
+            set_error_message('Seleccione una profesión válida');
         }
-        else if (es_por_horas == false && !Number(cantidad_unidades)) {
+        else if (parseFloat(valor_unidad) < 0) {
             set_error(true);
-            set_error_message('Por favor ingrese el número de unidades');
+            set_error_message('El precio por unidad debe ser mayor a cero');
         }
-        else if (es_por_horas == false && parseFloat(cantidad_unidades) < 1) {
+        else if (parseFloat(valor_hora) < 0) {
             set_error(true);
-            set_error_message('La cantidad de unidades debe ser mayor o igual a 1');
+            set_error_message('El precio por hora debe ser mayor a cero');
         }
         else {
-            let fecha_hora = fecha.getFullYear() + "-" + ("0" + (fecha.getMonth() + 1)).slice(-2) + "-" + ("0" + fecha.getDate()).slice(-2) + " " + ("0" + fecha.getHours()).slice(-2) + ":" + ("0" + fecha.getMinutes()).slice(-2) + ":" + ("0" + fecha.getSeconds()).slice(-2)+"-5";
-            fetch('http://localhost:4000/pedir_servicio', {
-                method: 'POST',
-                body: JSON.stringify({
-                    usuario_id: usuario.id,
-                    servicio_nro,
-                    servicio_pedido_fecha: fecha_hora,
-                    descripcion: servicio_descripcion,
-                    servicio_horas: es_por_horas?cantida_horas:-1,
-                    servicio_unidad_labor: !es_por_horas?cantidad_unidades:-1,
-                    es_por_hora: es_por_horas
-                }), // data can be `string` or {object}!
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            }).then(res => res.json())
-                .then(response => {
-                    if (response.status === 200) {
-                        set_success(true);
-                        set_success_message('Solicitud enviada');
-                        set_sercicio_descripcion('');
-                        set_cantidad_unidades('');
-                        set_cantidad_horas('');
-                    }
-                    else {
-                        set_error(true);
-                        set_error_message(response.message);
-                    }
-                })
-                .catch(error => {
-                    set_error(true);
-                    set_error_message(error);
-                });
-
+            ocup.filter(x => x.ocupacion_id === ocupacion).length === 0 ? ocup.push({ ocupacion_id: ocupacion, servicio_precio_hora: valor_hora, servicio_precio_unidad_labor: valor_unidad, servicio_descripcion: descripcion_trabajo }) : alert('Usted ya selecciono esta profesión');
+            set_ocupaciones_temp(ocup);
+            set_ocupacion('');
+            set_valor_hora('');
+            set_valor_unidad('');
+            set_sugerencias([]);
+            set_descripcion_trabajo('');
         }
     }
-
-    const handle_date_change = (date) => {
-        set_selected_date(date);
-
-    };
-    const [trabajador, set_trabajador] = useState({
-        trabajador_cedula: '', trabajador_nombre: '', trabajador_direccion: '',
-        trabajador_latitud: '',
-        trabajador_longitud: '',
-        trabajador_foto_base64: '',
-        puntuacion: 0
-    });
-
-    const cambiar_tipo_servicio = value => {
-        if (value === 'Por Horas') {
-            set_tipo_servicio(value);
-            set_es_por_horas(true);
+    const eliminar_ocupacion_temp = (value) => {
+        let ocups = ocupaciones_temp;
+        for (let i = 0; i < ocups.length; i++) {
+            if (value === ocups[i].ocupacion_id) {
+                ocups.splice(i, 1);
+            }
         }
-        else {
-            set_tipo_servicio(value);
-            set_es_por_horas(false);
-        }
+        set_ocupaciones_temp(ocups);
+        set_valor_unidad("0");
     }
-    const handleClickOpen = () => {
-        setOpen(true);
-    };
-    const handleClose = () => {
-        setOpen(false);
-    };
-
-
     const search_ocupacion = value => {
         set_cargando(true);
         set_ocupacion(value);
@@ -212,121 +150,111 @@ export default function Pedido() {
                 set_cargando(false);
             });
     }
-    const get_info_empleado = (id) => {
-        set_cargando(true);
-        set_servicio_nro(id);
-        fetch('http://localhost:4000/empleado_informacion', {
+    const inactivar_servicio = servicio_nro => {
+
+        fetch('http://localhost:4000/inactivar_servicio', {
             method: 'POST',
             body: JSON.stringify({
-                servicio_nro: id
+                servicio_nro
             }), // data can be `string` or {object}!
             headers: {
                 'Content-Type': 'application/json'
             }
         }).then(res => res.json())
             .then(response => {
-                if (response.status === 400 || response.status === 200) {
-                    set_cargando(false);
-                    set_trabajador(response.trabajador)
+                if (response.status === 200) {
+                    set_success(true);
+                    set_success_message(response.message);
+                    get_servicios_trabajador();
                 }
                 else {
-                    set_cargando(false);
-                    set_trabajador(response.trabajador)
+                    set_error(true);
+                    set_error_message(response.message);
                 }
             })
             .catch(error => {
-                alert(error);
-                set_cargando(false);
+                set_error(true);
+                set_error_message('error interno del servidor');
             });
-
     }
+    const agregar_servicios_empleado = () => {
 
-    const get_empleados = () => {
-        set_cargando(true);
-        fetch('http://localhost:4000/empleados_cercanos', {
+        fetch('http://localhost:4000/agregar_servicios_empleado', {
             method: 'POST',
             body: JSON.stringify({
-                id_usuario: usuario.id,
-                ocupacion_id: ocupacion,
-                limite
+                cedula: usuario.cedula,
+                servicios: JSON.stringify(ocupaciones_temp)
             }), // data can be `string` or {object}!
             headers: {
                 'Content-Type': 'application/json'
             }
         }).then(res => res.json())
             .then(response => {
-                if (response.status === 400 || response.status === 200) {
-                    set_cargando(false);
-                    set_empleados(response.trabajadores);
-                    set_trabajador({
-                        trabajador_cedula: '', trabajador_nombre: '', trabajador_direccion: '',
-                        trabajador_latitud: '',
-                        trabajador_longitud: '',
-                        trabajador_foto_base64: '',
-                        puntuacion: 0
-                    });
+                if (response.length>0) {
+                    set_success(true);
+                    set_success_message('Servicios agregados con éxito');
+                    get_servicios_trabajador();
                 }
                 else {
-                    set_cargando(false);
-                    set_empleados(response.trabajadores);
-                    set_trabajador({
-                        trabajador_cedula: '', trabajador_nombre: '', trabajador_direccion: '',
-                        trabajador_latitud: '',
-                        trabajador_longitud: '',
-                        trabajador_foto_base64: '',
-                        puntuacion: 0
-                    });
+                    set_error(true);
+                    set_error_message('No se pudieron agregar los servicios');
                 }
             })
             .catch(error => {
-                alert(error);
-                set_cargando(false);
-                set_trabajador({
-                    trabajador_cedula: '', trabajador_nombre: '', trabajador_direccion: '',
-                    trabajador_latitud: '',
-                    trabajador_longitud: '',
-                    trabajador_foto_base64: '',
-                    puntuacion: 0
-                });
+                set_error(true);
+                set_error_message('error interno del servidor');
             });
-
     }
-    const get_more_empleados = (value) => {
-        set_cargando(true);
-        set_limite(value);
-        fetch('http://localhost:4000/empleados_cercanos', {
+    const get_servicios_trabajador = () => {
+        fetch('http://localhost:4000/get_servicios_trabajador', {
             method: 'POST',
             body: JSON.stringify({
-                id_usuario: usuario.id,
-                ocupacion_id: ocupacion,
-                limite: value
+                usuario_id: usuario.cedula
             }), // data can be `string` or {object}!
             headers: {
                 'Content-Type': 'application/json'
             }
         }).then(res => res.json())
             .then(response => {
-                if (response.status === 400 || response.status === 200) {
-                    set_cargando(false);
-                    set_empleados(response.trabajadores)
+                if (response.status === 200) {
+                    set_ocupaciones(response.servicios);
                 }
                 else {
-                    set_cargando(false);
-                    set_empleados(response.trabajadores)
+                    set_ocupaciones(response.servicios);
                 }
             })
             .catch(error => {
                 alert(error);
-                set_cargando(false);
             });
-
     }
+    useEffect(() => {
+        fetch('http://localhost:4000/get_servicios_trabajador', {
+            method: 'POST',
+            body: JSON.stringify({
+                usuario_id: usuario.cedula
+            }), // data can be `string` or {object}!
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        }).then(res => res.json())
+            .then(response => {
+                if (response.status === 200) {
+                    set_ocupaciones(response.servicios);
+                }
+                else {
+                    set_ocupaciones(response.servicios);
+                }
+            })
+            .catch(error => {
+                alert(error);
+            });
+    }, []);
 
     return (
         <Fragment>
-            <h3>
-                Buscar profesional
-            </h3>
+            <h2 style={{ color: 'gray', textAlign: 'center' }}>
+                AGREGAR UN NUEVO SERICIO
+            </h2>
             <Grid container className={classes.root}>
                 <Grid item xs={11}>
                     <Autocomplete
@@ -347,176 +275,98 @@ export default function Pedido() {
                 <Grid item xs={1}>
                     <Tooltip title="Buscar Empleados" placement="top">
                         <IconButton
-                            onClick={e => get_empleados()}
                             children={<Search fontSize="large" />}
                         />
                     </Tooltip>
                 </Grid>
             </Grid>
-            {cargando ? <LinearProgress color="secondary" /> : null}
-            <div>
-                <Grid container className={classes.root}>
-                    <Grid item xs={6}>
-                        <div className={classes.scroll_grid}>
-                            {
-                                empleados.map((element) =>
-                                    <Card className={classes.card_root} key={element.trabajador_cedula}>
-                                        <CardContent>
-                                            <Typography className={classes.card_pos} color="textPrimary">
-                                                {element.trabajador_cedula}
-                                            </Typography>
-                                            <Typography className={classes.card_title} color="textSecondary" gutterBottom>
-                                                {element.trabajador_nombre + " " + element.trabajador_apellido}
-                                            </Typography>
-                                            <Typography className={classes.card_pos} color="textSecondary">
-                                                {element.servicio_descripcion}
-                                            </Typography>
-                                            <Typography className={classes.card_pos} color="textSecondary">
-                                                {element.trabajador_direccion}
-                                            </Typography>
-                                        </CardContent>
-                                        <CardActions>
-                                            <Button size="small" style={{ color: 'green' }} onClick={e => get_info_empleado(element.servicio_nro)}>Detalles</Button>
-                                        </CardActions>
-                                    </Card>
-                                )
-                            }
-                            <div style={{ marginLeft: 'auto', marginRight: 'auto' }}>
-                                <Button color="primary" onClick={e => get_more_empleados(limite + 5)}>Cargar más Resultados</Button>
-                            </div>
-
-                        </div>
-                    </Grid>
-                    <Grid item xs={6}>
-                        {trabajador.trabajador_cedula !== '' ?
-                            <div style={{ marginLeft: '1%', marginTop: '2%' }}>
-                                <h3 style={{ textAlign: 'center' }}>{trabajador.trabajador_nombre}</h3>
-                                <img height="200" width="200" style={{ display: 'block', marginBottom: '5%', marginLeft: 'auto', marginRight: 'auto' }} src={'data:image/png;base64,' + trabajador.trabajador_foto_base64} alt="foto trabajador" />
-                                <b>Identificación </b><span>{trabajador.trabajador_cedula}</span><br></br>
-                                <b>Celular </b><span>{trabajador.trabajador_celular}</span><br></br>
-                                <b>Dirección </b><span>{trabajador.trabajador_direccion}</span><br></br>
-                                <div style={{ textAlign: 'center', marginTop: '5%' }}>
-                                    <Typography component="legend">Calificación</Typography>
-                                    <Rating name="read-only" value={trabajador.puntuacion} readOnly />
-                                </div>
-                                <div style={{ textAlign: 'center', marginTop: '5%' }}>
-                                    <Button variant="outlined" color="primary" onClick={handleClickOpen}>
-                                        Solicitar Servicio
-                                    </Button>
-                                </div>
-                            </div> : null}
-                    </Grid>
+            <br></br>
+            <Grid container className={classes.root}>
+                <Grid item xs={3}>
+                    <TextField type="number" id="valor_hora" value={valor_hora} onChange={e => set_valor_hora(e.target.value)} label="Precio por hora" />
                 </Grid>
-            </div>
-            <Dialog
-                open={open}
-                TransitionComponent={Transition}
-                keepMounted
-                onClose={handleClose}
-                aria-labelledby="alert-dialog-slide-title"
-                aria-describedby="alert-dialog-slide-description"
-            >
-                <DialogTitle id="alert-dialog-slide-title">{"Petición de un nuevo servicio"}</DialogTitle>
-                <DialogContent>
-                    <DialogContentText id="alert-dialog-slide-description">
-                        Una vez solicitado el servicio se le enviará una petición al trabajador y en caso de que la acepte
-                        se le enviará una notificación
-                </DialogContentText>
+                <Grid item xs={3} md={3}>
+                    <TextField type="number" id="valor_unidad" value={valor_unidad} onChange={e => set_valor_unidad(e.target.value)} label="Precio por unidad" />
+                </Grid>
+                <Grid item xs={3} md={3}>
                     <TextField
-                        margin="normal"
-                        label="Descripción del servicio"
+                        id="standard-textarea"
+                        label="Describa sus habilidades"
                         fullWidth
-                        value={servicio_descripcion}
-                        onChange={e => set_sercicio_descripcion(e.target.value)}
                         multiline
-                        rowsMax={6}
-                        type="text"
-                        id="password"
-                        color='primary'
+                        value={descripcion_trabajo} onChange={e => set_descripcion_trabajo(e.target.value)}
                     />
-                    <div style={{ marginTop: '2%' }}>
-                        <FormControl component="fieldset">
-                            <FormLabel component="legend">Tipo de Servicio</FormLabel>
-                            <RadioGroup aria-label="Servicios" name="Servicios" value={tipo_servicio} onChange={e => cambiar_tipo_servicio(e.target.value)}>
-                                <FormControlLabel value="Por Horas" control={<Radio />} label="Por Horas" />
-                                <FormControlLabel value="Por Unidades" control={<Radio />} label="Por Unidades" />
-                            </RadioGroup>
-                        </FormControl>
-                    </div>
-                    <MuiPickersUtilsProvider utils={DateFnsUtils}>
-                        <Grid container className={classes.root}>
-                            <Grid item xs={5}>
-                                <TextField
-                                    disabled={!es_por_horas}
-                                    margin="normal"
-                                    label="Cantidad de Horas"
-                                    value={cantida_horas}
-                                    onChange={e => set_cantidad_horas(e.target.value)}
-                                    fullWidth
-                                    rowsMax={6}
-                                    type="number"
-                                    id="password"
-                                    color='primary'
-                                />
-                            </Grid>
-                            <Grid item xs={1}></Grid>
-                            <Grid item xs={5}>
-                                <TextField
-                                    disabled={es_por_horas}
-                                    margin="normal"
-                                    value={cantidad_unidades}
-                                    onChange={e => set_cantidad_unidades(e.target.value)}
-                                    label="Cantidad de Unidades"
-                                    fullWidth
-                                    rowsMax={6}
-                                    type="number"
-                                    color='primary'
-                                />
-                            </Grid>
+                </Grid>
+                <Grid item xs={3} md={3}>
+                    <Button style={{ color: 'green', marginLeft: '5%' }} onClick={e => add_ocupacion()}>
+                        Agregar
+						<CheckCircleOutline style={{ fontSize: 30, marginLeft: '10px', color: 'green' }} />
+                    </Button>
+                </Grid>
+            </Grid>
+            <h3 style={{ textAlign: 'center', color: 'gray' }}>OCUPACIONES ALMACENADAS</h3>
+            <TableContainer component={Paper} style={{ width: '97%' }}>
+                <Table stickyHeader={true} aria-label="simple table">
+                    <TableHead>
+                        <TableRow>
+                            <TableCell>OCUPACIÓN</TableCell>
+                            <TableCell>PRECIO POR HORA</TableCell>
+                            <TableCell>PRECIO UNIDAD LABOR</TableCell>
+                            <TableCell>DESCRIPCIÓN</TableCell>
+                            <TableCell>ELIMINAR</TableCell>
+                        </TableRow>
+                    </TableHead>
+                    <TableBody>
 
-                            <Grid xs={6}>
-                                <KeyboardDatePicker
-                                    margin="normal"
-                                    id="date-picker-dialog"
-                                    label="Fecha del servicio"
-                                    format="MM/dd/yyyy"
-                                    value={fecha}
-                                    onChange={handle_date_change}
-                                    KeyboardButtonProps={{
-                                        'aria-label': 'change date',
-                                    }}
-                                />
-                            </Grid>
-                            <Grid xs={6}>
-                                <KeyboardTimePicker
-                                    margin="normal"
-                                    id="time-picker"
-                                    label="Hora del servicio"
-                                    value={fecha}
-                                    onChange={handle_date_change}
-                                    KeyboardButtonProps={{
-                                        'aria-label': 'change time',
-                                    }}
-                                />
-                            </Grid>
+                        {
+                            ocupaciones_temp.map((element) => (
+                                <TableRow key={element.ocupacion_id}>
+                                    <TableCell>{element.ocupacion_id}</TableCell>
+                                    <TableCell>{element.servicio_precio_hora}</TableCell>
+                                    <TableCell>{element.servicio_precio_unidad_labor}</TableCell>
+                                    <TableCell>{element.servicio_descripcion}</TableCell>
+                                    <TableCell><IconButton onClick={e => eliminar_ocupacion_temp(element.ocupacion_id)} children={<DeleteOutline style={{ fontSize: 30, marginLeft: '10px', color: 'red' }} />} /></TableCell>
+                                </TableRow>
+                            ))
+                        }
+                    </TableBody>
+                </Table>
+            </TableContainer>
+            <div style={{ textAlign: 'center', marginTop: '4%' }}>
+                <Button style={{ color: 'white', backgroundColor: 'green' }} variant="contained" onClick={e => agregar_servicios_empleado()}>
+                    REGISTRAR TODAS LOS SERVICIOS ALMACENADOS
+						<CheckCircleOutline style={{ fontSize: 30, marginLeft: '10px', color: 'green' }} />
+                </Button>
+            </div>
+            <br></br>
+            <h3 style={{ textAlign: 'center', color: 'gray' }}>OCUPACIONES REGISTRADAS</h3>
+            <TableContainer component={Paper} style={{ width: '97%' }}>
+                <Table stickyHeader={true} aria-label="simple table">
+                    <TableHead>
+                        <TableRow>
+                            <TableCell>OCUPACIÓN</TableCell>
+                            <TableCell>PRECIO POR HORA</TableCell>
+                            <TableCell>PRECIO UNIDAD LABOR</TableCell>
+                            <TableCell>DESCRIPCIÓN</TableCell>
+                            <TableCell>ELIMINAR</TableCell>
+                        </TableRow>
+                    </TableHead>
+                    <TableBody>
 
-                        </Grid>
-                        <div style={{ textAlign: 'center', marginTop: '3%' }}>
-                            <Button variant="outlined" style={{ color: 'white', background: 'green' }} onClick={e => subir_formulario_servicio()}>
-                                Confirmar Servicio
-                            </Button>
-                        </div>
-                    </MuiPickersUtilsProvider>
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={handleClose} color="primary">
-                        Disagree
-                </Button>
-                    <Button onClick={handleClose} color="primary">
-                        Agree
-                </Button>
-                </DialogActions>
-            </Dialog>
+                        {
+                            ocupaciones.map((element) => (
+                                <TableRow key={element.ocupacion_id}>
+                                    <TableCell>{element.ocupacion_id}</TableCell>
+                                    <TableCell>{element.servicio_precio_hora}</TableCell>
+                                    <TableCell>{element.servicio_precio_unidad_labor}</TableCell>
+                                    <TableCell>{element.servicio_descripcion}</TableCell>
+                                    <TableCell><IconButton onClick={e => inactivar_servicio(element.servicio_nro)} children={<DeleteOutline style={{ fontSize: 30, marginLeft: '10px', color: 'red' }} />} /></TableCell>
+                                </TableRow>
+                            ))
+                        }
+                    </TableBody>
+                </Table>
+            </TableContainer>
             <Snackbar open={error} autoHideDuration={2000}
                 anchorOrigin={{ vertical, horizontal }}
             >
@@ -527,7 +377,7 @@ export default function Pedido() {
             <Snackbar open={success} autoHideDuration={2000}
                 anchorOrigin={{ vertical, horizontal }}
             >
-                <Alert onClose={() => set_success(false)} variant="filled" severity="success">
+                <Alert onClose={() => set_success(false)} variant="filled" style={{backgroundColor:'white', color:'black'}}>
                     {success_message}
                 </Alert>
             </Snackbar>

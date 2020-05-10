@@ -621,7 +621,7 @@ export default function Formulario_empleado() {
 				) : (
 						<div>
 							<div className={classes.instructions}>{getStepContent(activeStep)}</div>
-							<div style={{ marginLeft: '38%', marginTop: '3%' }}>
+							<div style={{ textAlign:'center', marginTop: '8%' }}>
 								<Button style={{ color: 'gray' }} disabled={activeStep === 0} onClick={handleBack} variant="outlined" >
 									Regresar
 								</Button>

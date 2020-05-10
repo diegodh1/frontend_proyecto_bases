@@ -21,7 +21,8 @@ import Typography from '@material-ui/core/Typography';
 import Rating from '@material-ui/lab/Rating';
 import MenuItem from '@material-ui/core/MenuItem';
 import Select from '@material-ui/core/Select';
-
+import Chip from '@material-ui/core/Chip';
+import CreditCard from '@material-ui/icons/CreditCard';
 const useStyles = makeStyles({
     table: {
         width: '100%',
@@ -60,6 +61,7 @@ const Servicio_pedido = () => {
     const horizontal = 'right';
     const [operacion, set_operacion] = React.useState('FINALIZAR');
     const [servicio_nro, set_servicio_nro] = useState(0);
+    const [saldo_usuario, set_saldo_usuario] = useState(0);
 
     const handleClickOpen = (id_pedido, servicio_nro) => {
         set_servicio_pedido_id(id_pedido);
@@ -74,15 +76,18 @@ const Servicio_pedido = () => {
             get_servicios(value);
         }
         else {
-            actualizar_servicio_aceptado(servicio_pedido_id, operacion);
+
             if (operacion === 'CANCELADO') {
+                actualizar_servicio_aceptado(servicio_pedido_id, operacion);
                 actualizar_servicio_pedido(servicio_pedido_id, operacion);
                 get_servicios(value);
             }
-            if(operacion ==='FINALIZADO'){
+            if (operacion === 'FINALIZADO') {
                 get_servicios(value);
+                pagar_servicio();
                 set_calificar(true);
-                
+                obtener_saldo();
+
             }
         }
     };
@@ -98,6 +103,34 @@ const Servicio_pedido = () => {
     const handleChangeRowsPerPage = (event) => {
         setRowsPerPage(+event.target.value);
         setPage(0);
+    };
+    const pagar_servicio = () => {
+        let fecha = new Date();
+        let pago_fecha = fecha.getFullYear() + "-" + ("0" + (fecha.getMonth() + 1)).slice(-2) + "-" + ("0" + fecha.getDate()).slice(-2) + " " + ("0" + fecha.getHours()).slice(-2) + ":" + ("0" + fecha.getMinutes()).slice(-2) + ":" + ("0" + fecha.getSeconds()).slice(-2) + "-5";
+        fetch('http://localhost:4000/pagar_servicio', {
+            method: 'POST',
+            body: JSON.stringify({
+                servicio_pedido_id,
+                pago_fecha
+            }), // data can be `string` or {object}!
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        }).then(res => res.json())
+            .then(response => {
+                if (response.status === 200) {
+                    set_success(true);
+                    set_message_dialog(response.message);
+                }
+                else {
+                    set_error(true);
+                    set_message_dialog(response.message);
+                }
+            })
+            .catch(error => {
+                set_error(true);
+                set_message_dialog(error);
+            });
     };
     const dar_puntuacion = () => {
         let fecha = new Date();
@@ -212,7 +245,28 @@ const Servicio_pedido = () => {
                 set_message_dialog(error);
             });
     }
-
+    const obtener_saldo = () => {
+        fetch('http://localhost:4000/dar_saldo_usuario', {
+            method: 'POST',
+            body: JSON.stringify({
+                usuario_id: usuario.id
+            }), // data can be `string` or {object}!
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        }).then(res => res.json())
+            .then(response => {
+                if (response.status === 200) {
+                    set_saldo_usuario(response.usuario.cuenta_saldo);
+                }
+                else {
+                    set_saldo_usuario(response.usuario.cuenta_saldo);
+                }
+            })
+            .catch(error => {
+                set_saldo_usuario(0);
+            });
+    }
     useEffect(() => {
         fetch('http://localhost:4000/get_ultimos_servicios_pedidos', {
             method: 'POST',
@@ -236,12 +290,34 @@ const Servicio_pedido = () => {
             .catch(error => {
                 alert(error);
             });
+
+        //OBTENEMOS EL SALDO DEL USUARIO
+        fetch('http://localhost:4000/dar_saldo_usuario', {
+            method: 'POST',
+            body: JSON.stringify({
+                usuario_id: usuario.id
+            }), // data can be `string` or {object}!
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        }).then(res => res.json())
+            .then(response => {
+                if (response.status === 200) {
+                    set_saldo_usuario(response.usuario.cuenta_saldo);
+                }
+                else {
+                    set_saldo_usuario(response.usuario.cuenta_saldo);
+                }
+            })
+            .catch(error => {
+                set_saldo_usuario(0);
+            });
     }, []);
 
 
     return (
         <Fragment>
-            <h1 style={{ textAlign: 'center' }}><u>Ultimos Servicios Solicitados</u></h1>
+            <h1 style={{ textAlign: 'center',color:'gray' }}><u>Ultimos Servicios Solicitados</u></h1>
             <br></br>
             <FormControl component="fieldset" style={{ flexDirection: "row" }}>
                 <FormLabel component="legend">Filtrar por servicios</FormLabel>
@@ -319,7 +395,14 @@ const Servicio_pedido = () => {
                     onChangeRowsPerPage={handleChangeRowsPerPage}
                 />
             </Paper>
-
+            <div style={{ textAlign: 'center', marginTop: '4%' }}>
+                <Chip
+                    icon={<CreditCard />}
+                    label={"SALDO DISPONIBLE $ " + saldo_usuario}
+                    color="secondary"
+                    variant="outlined"
+                />
+            </div>
             <Dialog
                 open={open}
                 TransitionComponent={Transition}

@@ -74,7 +74,7 @@ export default function Pedido() {
     const dispatch = useDispatch();
     const [sugerencias, set_sugerencias] = useState([]);
     const [empleados, set_empleados] = useState([]);
-    const [limite, set_limite] = useState(1);
+    const [limite, set_limite] = useState(5);
     const [ocupacion, set_ocupacion] = useState('');
     const [cargando, set_cargando] = useState(false);
     const [servicio_descripcion, set_sercicio_descripcion] = useState('');
@@ -324,7 +324,7 @@ export default function Pedido() {
 
     return (
         <Fragment>
-            <h3>
+            <h3 style={{color:'gray' }}>
                 Buscar profesional
             </h3>
             <Grid container className={classes.root}>

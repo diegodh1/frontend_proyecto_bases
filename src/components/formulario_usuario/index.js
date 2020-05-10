@@ -463,7 +463,7 @@ export default function Formulario_usuario() {
 				) : (
 						<div>
 							<div className={classes.instructions}>{getStepContent(activeStep)}</div>
-							<div style={{ marginLeft: '40%', marginTop: '3%' }}>
+							<div style={{ textAlign:'center', marginTop: '8%' }}>
 								<Button style={{ color: 'gray' }} disabled={activeStep === 0} onClick={handleBack} variant="outlined" >
 									Regresar
 								</Button>
@@ -472,12 +472,12 @@ export default function Formulario_usuario() {
 										variant="contained"
 										color="primary"
 										onClick={e => subir_formulario()}
-										style={{color: 'white', background: 'green' }}>Finalizar
+										style={{ marginLeft: '5%', color: 'white', background: 'green' }}>Finalizar
 									</Button> :
 									<Button
 										variant="contained"
 										onClick={e => comprobar_info()}
-										style={{ color: 'white', background: 'green' }}>Siguiente
+										style={{ marginLeft: '5%', color: 'white', background: 'green' }}>Siguiente
 									</Button>}
 
 							</div>
