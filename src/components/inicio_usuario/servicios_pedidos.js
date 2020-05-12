@@ -82,12 +82,15 @@ const Servicio_pedido = () => {
                 actualizar_servicio_pedido(servicio_pedido_id, operacion);
                 get_servicios(value);
             }
-            if (operacion === 'FINALIZADO') {
-                get_servicios(value);
+            else if (operacion === 'FINALIZADO') {
                 pagar_servicio();
                 set_calificar(true);
                 obtener_saldo();
+                get_servicios(value);
 
+            }
+            else{
+                get_servicios(value);
             }
         }
     };
@@ -430,7 +433,7 @@ const Servicio_pedido = () => {
                     value={operacion}
                     onChange={e => set_operacion(e.target.value)}
                 >
-                        <MenuItem value="FINALIZADO">FINALIZAR</MenuItem>
+                        <MenuItem value="CANCELADO">CANCELAR</MenuItem>
                     </Select>}
                 <DialogActions>
                     <Button style={{ color: 'red' }} onClick={e => setOpen(false)} color="primary">

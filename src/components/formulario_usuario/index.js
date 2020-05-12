@@ -191,7 +191,8 @@ function Informacion_seguridad() {
 		<div style={{width:'100%'}}>
 			<TextField id="contrasenha" value={contrasenha} onChange={e => set_state_contrasenha(e.target.value)} className={classes.input} label="Contraseña para el inicio de sección" variant="outlined" />
 			<Grid container className={classes.container_root} spacing={2}>
-				<Grid item xs={6}>
+				<Grid item xs={3}></Grid>
+				<Grid item xs={3}>
 					<Button variant="contained" component="label">Seleccionar foto usuario
 					<Input
 							type="file"
@@ -200,12 +201,13 @@ function Informacion_seguridad() {
 						/>
 					</Button>
 				</Grid>
-				<Grid item xs={6}>
+				<Grid item xs={3}>
 					<Button variant="outlined" style={{ color: 'green' }} onClick={e => subir_foto_server()}>
 						Subir foto del usuario
 					<CloudUpload style={{ fontSize: 30, marginLeft: '10px' }} />
 					</Button>
 				</Grid>
+				<Grid item xs={3}></Grid>
 			</Grid>
 			<Snackbar open={open} autoHideDuration={3000} onClose={handleClose}
 				anchorOrigin={{ vertical, horizontal }}>
@@ -220,7 +222,8 @@ function Informacion_seguridad() {
 				</Alert>
 			</Snackbar>
 			<Grid container className={classes.container_root} spacing={2}>
-				<Grid item xs={6}>
+			<Grid item xs={3}></Grid>
+				<Grid item xs={3}>
 					<Button variant="contained" component="label" >Recibo servicios públicos
 					<Input
 							type="file"
@@ -229,12 +232,13 @@ function Informacion_seguridad() {
 						/>
 					</Button>
 				</Grid>
-				<Grid item xs={6}>
+				<Grid item xs={3}>
 					<Button variant="outlined" style={{ color: 'green' }} onClick={e => subir_recibo_server()}>
 						Subir foto del recibo
 					<CloudUpload style={{ fontSize: 30, marginLeft: '10px' }} />
 					</Button>
 				</Grid>
+				<Grid item xs={3}></Grid>
 			</Grid>
 		</div>
 	)
